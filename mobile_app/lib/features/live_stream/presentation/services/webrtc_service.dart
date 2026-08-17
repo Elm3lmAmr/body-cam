@@ -20,6 +20,7 @@ class WebRTCService {
   MediaStream? get localStream => _localStream;
   MediaStream? get remoteStream => _remoteStream;
   String? get recordingPath => _recordingPath;
+  final List<RTCIceCandidate> _iceQueue = [];
   Function(MediaStream)? onAddRemoteStream;
 
   static const Map<String, dynamic> _iceConfig = {
@@ -82,14 +83,27 @@ class WebRTCService {
           msg['sdp']['type'] as String,
         );
         await _peerConnection!.setRemoteDescription(sdp);
+        
+        // Process queued candidates
+        for (var c in _iceQueue) {
+          await _peerConnection!.addCandidate(c);
+        }
+        _iceQueue.clear();
       } else if (type == 'ice-candidate') {
         final c = msg['candidate'];
         if (c != null) {
-          await _peerConnection!.addCandidate(RTCIceCandidate(
+          final candidate = RTCIceCandidate(
             c['candidate'] as String?,
             c['sdpMid'] as String?,
             c['sdpMLineIndex'] as int?,
-          ));
+          );
+          
+          // Queue if remote description is not set yet
+          if (await _peerConnection!.getRemoteDescription() == null) {
+            _iceQueue.add(candidate);
+          } else {
+            await _peerConnection!.addCandidate(candidate);
+          }
         }
       }
     });

@@ -103,7 +103,6 @@ export function useWebRTC(employeeCode) {
         try {
           if (!pc.__localStream) {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            // Start muted by default
             stream.getAudioTracks().forEach(t => t.enabled = false);
             pc.__localStream = stream;
             stream.getTracks().forEach(track => pc.addTrack(track, stream));
@@ -113,16 +112,30 @@ export function useWebRTC(employeeCode) {
         }
 
         await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+        
+        // Process queued ICE candidates now that remote description is set
+        if (pc.__iceQueue) {
+          for (const c of pc.__iceQueue) {
+            try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) { console.warn(e); }
+          }
+          pc.__iceQueue = [];
+        }
+
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         ws.send(JSON.stringify({ type: 'answer', sdp: answer }));
       }
 
       if (msg.type === 'ice-candidate' && msg.candidate) {
-        try {
-          await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
-        } catch (e) {
-          console.warn('ICE candidate error:', e);
+        if (!pc.remoteDescription) {
+          pc.__iceQueue = pc.__iceQueue || [];
+          pc.__iceQueue.push(msg.candidate);
+        } else {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
+          } catch (e) {
+            console.warn('ICE candidate error:', e);
+          }
         }
       }
 
