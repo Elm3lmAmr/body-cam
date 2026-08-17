@@ -9,7 +9,7 @@ export default function IncidentDetailsModal({ token, incidentId, onClose }) {
 
   const fetchDetails = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/incidents/${incidentId}`, {
+      const res = await fetch(`http://${window.location.hostname}:4000/api/incidents/${incidentId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -30,7 +30,7 @@ export default function IncidentDetailsModal({ token, incidentId, onClose }) {
     e.preventDefault();
     if (!newLog) return;
     try {
-      await fetch(`http://localhost:5000/api/incidents/${incidentId}/logs`, {
+      await fetch(`http://${window.location.hostname}:4000/api/incidents/${incidentId}/logs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export default function IncidentDetailsModal({ token, incidentId, onClose }) {
             <ul>
               {incident.attachments.map(att => (
                 <li key={att.id}>
-                  <a href={`http://localhost:5000/uploads/${att.file_path}`} target="_blank" rel="noopener noreferrer">
+                  <a href={`http://${window.location.hostname}:4000/uploads/${att.file_path}`} target="_blank" rel="noopener noreferrer">
                     {att.file_name}
                   </a>
                 </li>

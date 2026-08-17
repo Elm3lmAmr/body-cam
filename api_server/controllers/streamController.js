@@ -47,9 +47,10 @@ exports.initializeStream = async (req, res, next) => {
         startedAt: new Date().toISOString(),
       });
 
+      const host = req.hostname || '127.0.0.1';
       return res.status(200).json({
         stream_id,
-        webrtc_endpoint: 'ws://127.0.0.1:4000/api/stream/signaling',
+        webrtc_endpoint: `ws://${host}:4000/api/stream/signaling`,
         device_serial,
         employee_code: employeeCode,
       });

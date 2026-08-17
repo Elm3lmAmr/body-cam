@@ -15,7 +15,7 @@ export default function IncidentsView({ token }) {
   const fetchIncidents = async () => {
     setLoading(true);
     try {
-      let url = 'http://localhost:5000/api/incidents';
+      let url = `http://${window.location.hostname}:4000/api/incidents`;
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);

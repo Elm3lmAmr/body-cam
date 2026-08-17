@@ -12,6 +12,7 @@ import '../bloc/live_stream_bloc.dart';
 import '../services/stream_permission_service.dart';
 import '../services/webrtc_service.dart';
 
+
 class LiveStreamScreen extends StatefulWidget {
   const LiveStreamScreen({super.key});
 
@@ -24,6 +25,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   final _remoteRenderer = RTCVideoRenderer();
   final _secureStorage = const FlutterSecureStorage();
   WebRTCService? _webRTCService;
+
 
   bool _permissionsGranted = false;
   bool _permissionsDeniedPermanently = false;
@@ -92,6 +94,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
 
     // Start WebRTC
     _webRTCService = WebRTCService();
+
     _webRTCService!.onAddRemoteStream = (stream) {
       if (mounted) {
         setState(() {
@@ -149,6 +152,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _webRTCService = null;
     _localRenderer.srcObject = null;
     _remoteRenderer.srcObject = null;
+    
+
     if (mounted) {
       setState(() {});
       if (recPath != null) {
@@ -181,6 +186,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     _localRenderer.dispose();
     _remoteRenderer.dispose();
     _webRTCService?.dispose();
+
     super.dispose();
   }
 
@@ -275,7 +281,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 13, color: Colors.black54, height: 1.5),
             ),
-            const SizedBox(height: 40),
+
+            const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: _permissionsGranted ? _startStream : null,
               icon: const Icon(Icons.play_arrow_rounded),
@@ -313,20 +320,14 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
   }
 
   Widget _buildLive(StreamLiveActive state) {
-    final hasCamera = _localRenderer.srcObject != null;
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Camera preview
-        if (hasCamera)
-          RTCVideoView(
-            _localRenderer,
-            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-            mirror: false,
-          )
-        else
-          Container(color: Colors.black,
-              child: const Center(child: CircularProgressIndicator())),
+        // Local camera preview
+        RTCVideoView(
+          _localRenderer,
+          objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+        ),
 
         // Hidden remote audio renderer
         SizedBox(

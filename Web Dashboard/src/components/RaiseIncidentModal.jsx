@@ -24,7 +24,7 @@ export default function RaiseIncidentModal({ token, onClose, onSuccess }) {
       if (startTime) formData.append('start_time', startTime);
       if (endTime) formData.append('end_time', endTime);
       
-      const response = await fetch('http://localhost:5000/api/incidents/raise', {
+      const response = await fetch(`http://${window.location.hostname}:4000/api/incidents/raise`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`
@@ -38,7 +38,7 @@ export default function RaiseIncidentModal({ token, onClose, onSuccess }) {
         if (attachment) {
           const fileData = new FormData();
           fileData.append('attachment', attachment);
-          await fetch(`http://localhost:5000/api/incidents/${result.incident.id}/attachments`, {
+          await fetch(`http://${window.location.hostname}:4000/api/incidents/${result.incident.id}/attachments`, {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
             body: fileData

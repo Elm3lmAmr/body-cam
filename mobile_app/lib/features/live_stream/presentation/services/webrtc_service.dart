@@ -32,14 +32,12 @@ class WebRTCService {
 
   Future<void> start(String employeeCode) async {
     _employeeCode = employeeCode;
-    // 1. Get user media (video + audio)
+    // 1. Get user media (back camera + audio)
     _localStream = await navigator.mediaDevices.getUserMedia({
-      'audio': true,
       'video': {
         'facingMode': 'environment',
-        'width': {'ideal': 1280},
-        'height': {'ideal': 720},
       },
+      'audio': true,
     });
 
     // 2. Create peer connection

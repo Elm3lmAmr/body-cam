@@ -20,7 +20,7 @@ export default function AdminPanel({ token }) {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/users', {
+      const res = await fetch(`http://${window.location.hostname}:4000/api/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -52,7 +52,7 @@ export default function AdminPanel({ token }) {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
-      await fetch(`http://localhost:5000/api/users/${id}`, {
+      await fetch(`http://${window.location.hostname}:4000/api/users/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -66,7 +66,7 @@ export default function AdminPanel({ token }) {
     e.preventDefault();
     try {
       const method = editingUserId ? 'PUT' : 'POST';
-      const url = editingUserId ? `http://localhost:5000/api/users/${editingUserId}` : 'http://localhost:5000/api/users';
+      const url = editingUserId ? `http://${window.location.hostname}:4000/api/users/${editingUserId}` : `http://${window.location.hostname}:4000/api/users`;
       
       const payload = { ...formData };
       if (editingUserId) delete payload.employee_code; // Usually don't update employee code
