@@ -5,6 +5,8 @@ import StatusBar from '../components/StatusBar';
 import Sidebar from '../components/Sidebar';
 import StreamViewer from '../components/StreamViewer';
 import RecordingsView from '../components/RecordingsView';
+import IncidentsView from '../components/IncidentsView';
+import AdminPanel from '../components/AdminPanel';
 
 export default function DashboardPage() {
   const { token, user, logout } = useAuth();
@@ -38,15 +40,23 @@ export default function DashboardPage() {
               selectedStream={selectedStream}
               onSelectStream={setSelectedStream}
             />
-            <main style={{ flex: 1, background: '#0D1B2A', position: 'relative', overflow: 'hidden' }}>
+            <main style={{ flex: 1, background: 'var(--bg-dark)', position: 'relative', overflow: 'hidden' }}>
               <StreamViewer stream={selectedStream} />
             </main>
           </>
-        ) : (
-          <main style={{ flex: 1, background: '#0D1B2A', position: 'relative', overflow: 'hidden' }}>
+        ) : activeTab === 'recordings' ? (
+          <main style={{ flex: 1, background: 'var(--bg-dark)', position: 'relative', overflow: 'hidden' }}>
             <RecordingsView token={token} />
           </main>
-        )}
+        ) : activeTab === 'incidents' ? (
+          <main style={{ flex: 1, background: 'var(--bg-dark)', position: 'relative', overflow: 'hidden' }}>
+            <IncidentsView token={token} />
+          </main>
+        ) : activeTab === 'admin' && user?.role === 'security head' ? (
+          <main style={{ flex: 1, background: 'var(--bg-dark)', position: 'relative', overflow: 'hidden' }}>
+            <AdminPanel token={token} />
+          </main>
+        ) : null}
       </div>
     </div>
   );

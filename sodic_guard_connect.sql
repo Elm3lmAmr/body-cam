@@ -108,3 +108,61 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-07-02 12:34:01
+
+
+--
+-- Table structure for table incidents
+--
+
+DROP TABLE IF EXISTS \incidents\;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE \incidents\ (
+  \id\ int(11) NOT NULL AUTO_INCREMENT,
+  \incident_uid\ varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  \description\ text COLLATE utf8mb4_unicode_ci,
+  \dispatch_to\ varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'Head of Security Operations',
+  \created_by_user_id\ int(11) DEFAULT NULL,
+  \created_at\ timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (\id\),
+  UNIQUE KEY \incident_uid\ (\incident_uid\),
+  KEY \created_by_user_id\ (\created_by_user_id\),
+  CONSTRAINT \incidents_ibfk_1\ FOREIGN KEY (\created_by_user_id\) REFERENCES \users\ (\id\)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
+-- Update incidents table
+ALTER TABLE \incidents\
+ADD COLUMN \start_time\ datetime DEFAULT NULL,
+ADD COLUMN \end_time\ datetime DEFAULT NULL,
+ADD COLUMN \status\ varchar(50) DEFAULT 'Open';
+
+-- Table structure for table \incident_attachments\
+DROP TABLE IF EXISTS \incident_attachments\;
+CREATE TABLE \incident_attachments\ (
+  \id\ int(11) NOT NULL AUTO_INCREMENT,
+  \incident_id\ int(11) NOT NULL,
+  \ile_name\ varchar(255) NOT NULL,
+  \ile_path\ varchar(255) NOT NULL,
+  \uploaded_at\ timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (\id\),
+  KEY \incident_id\ (\incident_id\),
+  CONSTRAINT \incident_attachments_ibfk_1\ FOREIGN KEY (\incident_id\) REFERENCES \incidents\ (\id\) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table structure for table \incident_logs\
+DROP TABLE IF EXISTS \incident_logs\;
+CREATE TABLE \incident_logs\ (
+  \id\ int(11) NOT NULL AUTO_INCREMENT,
+  \incident_id\ int(11) NOT NULL,
+  \ction\ varchar(255) NOT NULL,
+  \performed_by_user_id\ int(11) DEFAULT NULL,
+  \created_at\ timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (\id\),
+  KEY \incident_id\ (\incident_id\),
+  KEY \performed_by_user_id\ (\performed_by_user_id\),
+  CONSTRAINT \incident_logs_ibfk_1\ FOREIGN KEY (\incident_id\) REFERENCES \incidents\ (\id\) ON DELETE CASCADE,
+  CONSTRAINT \incident_logs_ibfk_2\ FOREIGN KEY (\performed_by_user_id\) REFERENCES \users\ (\id\) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

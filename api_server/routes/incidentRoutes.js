@@ -25,5 +25,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.post('/upload', upload.single('video'), incidentController.uploadIncident);
+router.post('/raise', incidentController.raiseIncident);
+router.get('/', incidentController.getIncidents);
+router.get('/:id', incidentController.getIncidentDetails);
+router.post('/:id/attachments', upload.single('attachment'), incidentController.addAttachment);
+router.post('/:id/logs', incidentController.addLog);
 
 module.exports = router;

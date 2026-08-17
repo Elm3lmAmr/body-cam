@@ -2,7 +2,7 @@
    EDARA DESIGN SYSTEM — Global Styles
    ============================================= */
 
-:root {
+:root, [data-theme="dark"] {
   --primary:      #2C5EAD;
   --secondary:    #1591DC;
   --accent:       #4BB8FA;
@@ -16,6 +16,22 @@
   --red-rec:      #FF3B3B;
   --border-color: #2C5EAD;
   --shadow-glow:  0 0 20px rgba(21, 145, 220, 0.25);
+}
+
+[data-theme="light"] {
+  --primary:      #1A4B96;
+  --secondary:    #0F78B8;
+  --accent:       #2A9DF4;
+  --canvas-fill:  #E8F4FD;
+  --bg-dark:      #F0F4F8;
+  --bg-panel:     #FFFFFF;
+  --bg-card:      #F9FAFC;
+  --text-light:   #1A2A3A;
+  --text-muted:   #5A7B95;
+  --green-hud:    #00AA2B;
+  --red-rec:      #E60000;
+  --border-color: #C0D6E4;
+  --shadow-glow:  0 0 20px rgba(21, 145, 220, 0.15);
 }
 
 /* ---- Reset ---- */
@@ -36,8 +52,8 @@ body,
 }
 
 body {
-  background: #0D1B2A;
-  color: #E8F4FD;
+  background: var(--bg-dark);
+  color: var(--text-light);
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;

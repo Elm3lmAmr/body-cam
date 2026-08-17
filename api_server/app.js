@@ -5,6 +5,7 @@ const authRoutes = require('./routes/authRoutes');
 const streamRoutes = require('./routes/streamRoutes');
 const incidentRoutes = require('./routes/incidentRoutes');
 const recordingRoutes = require('./routes/recordingRoutes');
+const userRoutes = require('./routes/userRoutes');
 const path = require('path');
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/stream', streamRoutes);
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/recordings', recordingRoutes);
+app.use('/api/users', userRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

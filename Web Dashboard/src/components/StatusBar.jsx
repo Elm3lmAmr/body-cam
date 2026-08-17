@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
-import { LogOut, Radio, Video } from 'lucide-react';
+import { LogOut, Radio, Video, AlertTriangle, Moon, Sun, Globe, Users } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 /**
  * Top status bar — fixed height 56px.
  * Props: { user, streamCount, lastUpdate, onLogout, activeTab, onTabChange }
  */
 export default function StatusBar({ user, streamCount, lastUpdate, onLogout, activeTab = 'live', onTabChange }) {
+  const { t, lang, toggleLanguage } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -26,12 +30,6 @@ export default function StatusBar({ user, streamCount, lastUpdate, onLogout, act
     <header style={styles.bar}>
       {/* ---- Left: Branding ---- */}
       <div style={styles.left}>
-        <img
-          src="/edara_logo.png"
-          alt="Edara"
-          style={styles.logo}
-          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-        />
         <div style={styles.brandText}>
           <span style={styles.brandName}>EDARA</span>
           <span style={styles.brandSub}>Command Center</span>
@@ -64,12 +62,42 @@ export default function StatusBar({ user, streamCount, lastUpdate, onLogout, act
         >
           <Video size={15} color="#4BB8FA" />
           <span style={{ fontWeight: 700, color: '#E8F4FD', fontSize: 13, letterSpacing: '0.06em' }}>
-            RECORDED SESSIONS
+            {t('recordings').toUpperCase()}
           </span>
         </button>
+
+        <button
+          onClick={() => onTabChange && onTabChange('incidents')}
+          style={{
+            ...styles.tabBtn,
+            background: activeTab === 'incidents' ? 'rgba(255, 59, 59, 0.2)' : 'transparent',
+            borderColor: activeTab === 'incidents' ? '#FF3B3B' : 'transparent',
+          }}
+        >
+          <AlertTriangle size={15} color="#FF3B3B" />
+          <span style={{ fontWeight: 700, color: '#E8F4FD', fontSize: 13, letterSpacing: '0.06em' }}>
+            {t('incidents').toUpperCase()}
+          </span>
+        </button>
+
+        {user?.role === 'security head' && (
+          <button
+            onClick={() => onTabChange && onTabChange('admin')}
+            style={{
+              ...styles.tabBtn,
+              background: activeTab === 'admin' ? 'rgba(21, 145, 220, 0.2)' : 'transparent',
+              borderColor: activeTab === 'admin' ? '#1591DC' : 'transparent',
+            }}
+          >
+            <Users size={15} color="#1591DC" />
+            <span style={{ fontWeight: 700, color: '#E8F4FD', fontSize: 13, letterSpacing: '0.06em' }}>
+              ADMIN
+            </span>
+          </button>
+        )}
       </div>
 
-      {/* ---- Right: User + Clock + Logout ---- */}
+      {/* ---- Right: User + Clock + Controls + Logout ---- */}
       <div style={styles.right}>
         <div style={styles.userInfo}>
           <span style={styles.userName}>
@@ -77,13 +105,26 @@ export default function StatusBar({ user, streamCount, lastUpdate, onLogout, act
           </span>
           <span style={styles.userRole}>SUPERVISOR</span>
         </div>
+        
         <div style={styles.clockBlock}>
           <span style={styles.clockTime}>{clockStr}</span>
           <span style={styles.clockDate}>{dateStr}</span>
         </div>
-        <button style={styles.logoutBtn} onClick={onLogout} title="Sign out" aria-label="Sign out">
-          <LogOut size={18} color="#7A9BB5" />
-        </button>
+        
+        <div style={{ display: 'flex', gap: '8px', borderLeft: '1px solid #2C5EAD', paddingLeft: '16px' }}>
+          <button style={styles.controlBtn} onClick={toggleLanguage} title="Toggle Language" aria-label="Toggle Language">
+            <Globe size={18} color="#7A9BB5" />
+            <span style={{ color: '#7A9BB5', fontSize: '10px', fontWeight: 'bold' }}>{lang === 'en' ? 'AR' : 'EN'}</span>
+          </button>
+          
+          <button style={styles.controlBtn} onClick={toggleTheme} title="Toggle Theme" aria-label="Toggle Theme">
+            {theme === 'dark' ? <Sun size={18} color="#7A9BB5" /> : <Moon size={18} color="#7A9BB5" />}
+          </button>
+
+          <button style={styles.controlBtn} onClick={onLogout} title={t('logout')} aria-label={t('logout')}>
+            <LogOut size={18} color="#7A9BB5" />
+          </button>
+        </div>
       </div>
     </header>
   );
@@ -208,15 +249,17 @@ const styles = {
     fontSize: 10,
     color: '#7A9BB5',
   },
-  logoutBtn: {
+  controlBtn: {
     background: 'rgba(44,94,173,0.15)',
     border: '1px solid #2C5EAD',
     borderRadius: 8,
-    width: 36,
+    minWidth: 36,
     height: 36,
+    padding: '0 8px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: '4px',
     cursor: 'pointer',
     transition: 'background 0.2s, border-color 0.2s',
   },
