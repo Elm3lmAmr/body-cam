@@ -43,23 +43,17 @@ export function useWebRTC(employeeCode) {
 
     // When we receive media tracks from guard
     pc.ontrack = (event) => {
-      if (videoRef.current && event.streams && event.streams.length > 0 && event.streams[0]) {
-        if (videoRef.current.srcObject !== event.streams[0]) {
-          videoRef.current.srcObject = event.streams[0];
-          videoRef.current.play().catch(e => console.error("Play error:", e));
-          setStatus('live');
-        }
-      } else if (videoRef.current && event.track) {
-        // Fallback if streams array is empty
-        let stream = videoRef.current.srcObject;
-        if (!stream) {
-          stream = new MediaStream();
+      const stream = event.streams && event.streams.length > 0 ? event.streams[0] : new MediaStream([event.track]);
+      
+      if (videoRef.current) {
+        if (videoRef.current.srcObject !== stream) {
+          videoRef.current.srcObject = stream;
+        } else {
+          // Force DOM update if track was dynamically added to same stream
+          videoRef.current.srcObject = null;
           videoRef.current.srcObject = stream;
         }
-        stream.addTrack(event.track);
-        // Only call play if we just created the stream or it's paused, 
-        // though calling play() every time might be okay if we handle the promise carefully,
-        // but it's safer to call play and swallow the abort error, or check if it's already playing.
+        
         videoRef.current.play().catch(e => {
           if (e.name !== 'AbortError') console.error("Play error:", e);
         });
@@ -111,7 +105,9 @@ export function useWebRTC(employeeCode) {
           console.warn('Could not access microphone:', e);
         }
 
+        pc.__isSettingRemote = true;
         await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+        pc.__isSettingRemote = false;
         
         // Process queued ICE candidates now that remote description is set
         if (pc.__iceQueue) {
@@ -127,7 +123,7 @@ export function useWebRTC(employeeCode) {
       }
 
       if (msg.type === 'ice-candidate' && msg.candidate) {
-        if (!pc.remoteDescription) {
+        if (!pc.remoteDescription || pc.__isSettingRemote) {
           pc.__iceQueue = pc.__iceQueue || [];
           pc.__iceQueue.push(msg.candidate);
         } else {

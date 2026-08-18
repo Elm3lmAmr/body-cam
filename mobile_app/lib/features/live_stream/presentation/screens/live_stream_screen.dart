@@ -110,6 +110,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
         setState(() {});
       }
 
+      // Add a small delay to prevent MediaRecorder from blocking WebRTC video initialization
+      await Future.delayed(const Duration(milliseconds: 1500));
+
       // Start recording automatically
       final dir = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
