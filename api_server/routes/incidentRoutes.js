@@ -24,9 +24,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+const { authMiddleware, authorizeRoles } = require('../middlewares/authMiddleware');
+
 router.post('/upload', upload.single('video'), incidentController.uploadIncident);
 router.post('/raise', incidentController.raiseIncident);
-router.get('/', incidentController.getIncidents);
+
+// Routes requiring auth
+router.use(authMiddleware);
+
+router.get('/stats', authorizeRoles('it_admin', 'manager'), incidentController.getStats);
+router.get('/', authorizeRoles('it_admin', 'manager', 'supervisor', 'operator'), incidentController.getIncidents);
 router.get('/:id', incidentController.getIncidentDetails);
 router.post('/:id/attachments', upload.single('attachment'), incidentController.addAttachment);
 router.post('/:id/logs', incidentController.addLog);

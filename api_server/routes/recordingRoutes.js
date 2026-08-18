@@ -24,7 +24,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+const { authMiddleware, authorizeRoles } = require('../middlewares/authMiddleware');
+
 router.post('/upload', upload.single('video'), recordingController.uploadRecording);
-router.get('/', recordingController.getRecordings);
+router.get('/', authMiddleware, authorizeRoles('it_admin', 'supervisor'), recordingController.getRecordings);
 
 module.exports = router;

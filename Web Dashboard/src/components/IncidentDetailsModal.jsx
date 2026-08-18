@@ -65,12 +65,33 @@ export default function IncidentDetailsModal({ token, incidentId, onClose }) {
 
         <div style={{ marginBottom: '16px' }}>
           <h3 style={{ color: 'var(--text-muted)' }}>Attachments</h3>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+            <input type="file" id="attachmentInput" style={{ display: 'none' }} onChange={async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              const formData = new FormData();
+              formData.append('attachment', file);
+              try {
+                await fetch(`http://${window.location.hostname}:4000/api/incidents/${incidentId}/attachments`, {
+                  method: 'POST',
+                  headers: { Authorization: `Bearer ${token}` },
+                  body: formData
+                });
+                fetchDetails();
+              } catch (error) {
+                console.error(error);
+              }
+            }} />
+            <button className="btn-primary" onClick={() => document.getElementById('attachmentInput').click()}>
+              + Import Attachment
+            </button>
+          </div>
           {incident.attachments && incident.attachments.length > 0 ? (
-            <ul>
+            <ul style={{ listStyleType: 'none', padding: 0 }}>
               {incident.attachments.map(att => (
-                <li key={att.id}>
-                  <a href={`http://${window.location.hostname}:4000/uploads/${att.file_path}`} target="_blank" rel="noopener noreferrer">
-                    {att.file_name}
+                <li key={att.id} style={{ marginBottom: '4px' }}>
+                  <a href={`http://${window.location.hostname}:4000/uploads/${att.file_path}`} target="_blank" rel="noopener noreferrer" download style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--accent)' }}>
+                    📄 {att.file_name} <span style={{ fontSize: '10px', background: 'var(--bg-dark)', padding: '2px 6px', borderRadius: '4px' }}>Export/Download</span>
                   </a>
                 </li>
               ))}

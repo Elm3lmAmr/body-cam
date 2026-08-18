@@ -24,7 +24,7 @@ export function useActiveStreams(token) {
   useEffect(() => {
     if (!token) return;
     refresh();
-    const id = setInterval(refresh, 4000);
+    const id = setInterval(refresh, 1000);
     return () => clearInterval(id);
   }, [token, refresh]);
 

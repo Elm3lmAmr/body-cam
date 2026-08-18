@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 exports.getUsers = async (req, res, next) => {
   try {
-    const [users] = await db.execute('SELECT id, employee_code, full_name, role, mobile_number FROM users');
+    const [users] = await db.execute('SELECT id, employee_code, full_name, role, mobile_number, last_login FROM users');
     res.status(200).json(users);
   } catch (error) {
     next(error);

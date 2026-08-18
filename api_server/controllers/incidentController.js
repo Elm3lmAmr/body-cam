@@ -32,17 +32,19 @@ exports.uploadIncident = async (req, res, next) => {
 
 exports.raiseIncident = async (req, res, next) => {
   try {
-    const { description, start_time, end_time } = req.body;
+    const { description, start_time, end_time, device_serial, type } = req.body;
     // Auto-generate UID like INC-12345
     const incident_uid = 'INC-' + Math.floor(10000 + Math.random() * 90000);
-    const dispatch_to = 'Head of Security Operations';
+    
+    // Auto dispatch logic if red flag
+    const dispatch_to = type === 'red_flag' ? 'Head of Security Operations' : 'Unassigned';
     
     // Hardcode user_id for now since we don't have auth middleware applied on this route yet
     const created_by_user_id = 1; 
 
     const [result] = await db.execute(
-      'INSERT INTO incidents (incident_uid, description, dispatch_to, created_by_user_id, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [incident_uid, description, dispatch_to, created_by_user_id, start_time || null, end_time || null, 'Open']
+      'INSERT INTO incidents (incident_uid, description, dispatch_to, created_by_user_id, start_time, end_time, status, device_serial, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [incident_uid, description, dispatch_to, created_by_user_id, start_time || null, end_time || null, type === 'red_flag' ? 'Dispatched' : 'Open', device_serial || null, type || 'general']
     );
 
     const incidentId = result.insertId;
@@ -51,6 +53,12 @@ exports.raiseIncident = async (req, res, next) => {
     await db.execute(
       'INSERT INTO incident_logs (incident_id, action, performed_by_user_id) VALUES (?, ?, ?)',
       [incidentId, 'Incident raised automatically dispatched to Security Head.', created_by_user_id]
+    );
+
+    // Create an event for the live feed
+    await db.execute(
+      'INSERT INTO events (type, message, source) VALUES (?, ?, ?)',
+      [type === 'red_flag' ? 'critical' : 'warning', `New Incident ${incident_uid} raised`, device_serial || 'System']
     );
 
     res.status(201).json({
@@ -141,5 +149,26 @@ exports.addLog = async (req, res, next) => {
     res.status(201).json({ message: 'Log added successfully' });
   } catch (error) {
     next(error);
+  }
+};
+
+exports.getStats = async (req, res, next) => {
+  try {
+    const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM incidents');
+    const [[{ critical }]] = await db.query('SELECT COUNT(*) as critical FROM incidents WHERE type = ?', ['red_flag']);
+    const [[{ total_duration }]] = await db.query('SELECT SUM(duration_seconds) as total_duration FROM recordings');
+    
+    // Last 7 days chart data
+    const [recent] = await db.query('SELECT DATE(start_time) as date, COUNT(*) as count FROM incidents GROUP BY DATE(start_time) ORDER BY date DESC LIMIT 7');
+
+    res.json({
+      total_incidents: total || 0,
+      critical_incidents: critical || 0,
+      avg_response_min: 2.4, // placeholder since no response logic exists yet
+      data_archived_mb: Math.floor(((total_duration || 0) * 2.5)), // rough estimation 2.5mb/s
+      incidents_by_day: recent,
+    });
+  } catch (err) {
+    next(err);
   }
 };

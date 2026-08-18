@@ -1,21 +1,26 @@
 const db = require('../config/db');
 const jwt = require('jsonwebtoken');
 
-// ─── Runtime flag: whether mobile_number column has been confirmed to exist ───
-let mobileColumnEnsured = false;
+// ─── Runtime flag: whether columns have been confirmed to exist ───
+let columnsEnsured = false;
 
 /**
- * Ensures the mobile_number column exists in the users table.
+ * Ensures the mobile_number and last_login columns exist in the users table.
  * Checks once per server lifetime and caches the result.
  */
-async function ensureMobileColumn() {
-  if (mobileColumnEnsured) return;
-  const [rows] = await db.query("SHOW COLUMNS FROM users LIKE 'mobile_number'");
-  if (rows.length === 0) {
+async function ensureColumns() {
+  if (columnsEnsured) return;
+  const [mobileRows] = await db.query("SHOW COLUMNS FROM users LIKE 'mobile_number'");
+  if (mobileRows.length === 0) {
     await db.query('ALTER TABLE users ADD COLUMN mobile_number VARCHAR(20)');
     console.log('Added mobile_number column to users table.');
   }
-  mobileColumnEnsured = true;
+  const [loginRows] = await db.query("SHOW COLUMNS FROM users LIKE 'last_login'");
+  if (loginRows.length === 0) {
+    await db.query('ALTER TABLE users ADD COLUMN last_login TIMESTAMP NULL DEFAULT NULL');
+    console.log('Added last_login column to users table.');
+  }
+  columnsEnsured = true;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -41,9 +46,15 @@ exports.deviceLogin = async (req, res, next) => {
 
     const user = rows[0];
 
+    let normalizedRole = (user.role || '').toLowerCase().replace(' ', '_');
+    if (normalizedRole === 'admin') normalizedRole = 'it_admin';
+
+    await ensureColumns();
+    await db.query('UPDATE users SET last_login = NOW() WHERE id = ?', [user.id]);
+
     // Generate JWT token
     const token = jwt.sign(
-      { id: user.id, employeeCode: user.employee_code, role: user.role },
+      { id: user.id, employeeCode: user.employee_code, role: normalizedRole },
       'supersecret',
       { expiresIn: '24h' }
     );
@@ -55,7 +66,7 @@ exports.deviceLogin = async (req, res, next) => {
         id: user.id,
         employeeCode: user.employee_code,
         fullName: user.full_name,
-        role: user.role
+        role: normalizedRole
       }
     });
   } catch (error) {
@@ -98,8 +109,8 @@ exports.register = async (req, res, next) => {
       return res.status(409).json({ error: 'Employee code is already registered' });
     }
 
-    // ── 5. Ensure mobile_number column exists ────────────────────────────────
-    await ensureMobileColumn();
+    // ── 5. Ensure columns exist ────────────────────────────────
+    await ensureColumns();
 
     // ── 6. Insert new user ───────────────────────────────────────────────────
     await db.query(

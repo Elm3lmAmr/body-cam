@@ -40,7 +40,7 @@ export default function Sidebar({ streams, selectedStream, onSelectStream }) {
 
       {/* Footer hint */}
       <div style={styles.sidebarFooter}>
-        <span style={styles.footerText}>Auto-refreshes every 4s</span>
+        <span style={styles.footerText}>Auto-refreshes every 1s</span>
       </div>
     </aside>
   );

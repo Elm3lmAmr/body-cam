@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
@@ -171,7 +172,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
     }
   }
 
-  void _triggerSOS() {
+  void _triggerSOS() async {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -180,7 +181,19 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> {
         duration: Duration(seconds: 3),
       ),
     );
-    // In a full implementation, you would emit an SOS event to the signaling server here.
+    
+    try {
+      final dio = Dio();
+      final url = '${AppConfig.baseUrl}/api/incidents/raise';
+      await dio.post(url, data: {
+        'description': 'SOS triggered by guard from Mobile App',
+        'type': 'red_flag',
+        'device_serial': AppConfig.deviceSerial,
+        'start_time': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      debugPrint('Failed to send SOS: $e');
+    }
   }
 
   @override

@@ -2,16 +2,14 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import DashboardPage from './pages/DashboardPage';
+import AppShell from './pages/AppShell';
 
 export default function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
         <AuthProvider>
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
+          <AppShell />
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>

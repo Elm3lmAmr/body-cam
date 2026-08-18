@@ -25,6 +25,11 @@ function authMiddleware(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded && decoded.role) {
+      let norm = decoded.role.toLowerCase().replace(' ', '_');
+      if (norm === 'admin') norm = 'it_admin';
+      decoded.role = norm;
+    }
     req.user = decoded;
     next();
   } catch (err) {
@@ -32,4 +37,23 @@ function authMiddleware(req, res, next) {
   }
 }
 
-module.exports = authMiddleware;
+/**
+ * Middleware factory to authorize specific roles.
+ * Must be used AFTER authMiddleware.
+ */
+function authorizeRoles(...allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user || !req.user.role) {
+      return res.status(403).json({ error: 'Forbidden: No role assigned' });
+    }
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: `Forbidden: Requires one of [${allowedRoles.join(', ')}]` });
+    }
+    next();
+  };
+}
+
+module.exports = {
+  authMiddleware,
+  authorizeRoles
+};

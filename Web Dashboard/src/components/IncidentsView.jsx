@@ -95,8 +95,11 @@ export default function IncidentsView({ token }) {
             <thead>
               <tr>
                 <th>{t('incident_uid')}</th>
+                <th>Type</th>
+                <th>Device ID</th>
                 <th>{t('description')}</th>
                 <th>{t('dispatch_to')}</th>
+                <th>Status</th>
                 <th>{t('created_at')}</th>
                 <th>Actions</th>
               </tr>
@@ -105,8 +108,11 @@ export default function IncidentsView({ token }) {
               {filteredIncidents.map(inc => (
                 <tr key={inc.id} style={trStyle}>
                   <td>{inc.incident_uid}</td>
+                  <td>{inc.type === 'red_flag' ? <span style={{ color: 'var(--red-rec)', fontWeight: 'bold' }}>RED FLAG</span> : 'General'}</td>
+                  <td>{inc.device_serial || 'N/A'}</td>
                   <td>{inc.description}</td>
                   <td>{inc.dispatch_to}</td>
+                  <td>{inc.status}</td>
                   <td>{new Date(inc.created_at).toLocaleString()}</td>
                   <td>
                     <button className="btn-primary" style={{ padding: '4px 8px', fontSize: '12px' }} onClick={() => setSelectedIncident(inc)}>
